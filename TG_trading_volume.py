@@ -92,4 +92,16 @@ while True:
             'totaldealmoney': tradingdata[7],
         }
         halftrading = tg.post('https://m3.tg6666.net/chatShow.php',data=tdata,verify=False)
+        sts = re.findall('.*var st = \[(.*)\].*', halftrading.text)[0].split(',')
+        stChartValues = re.findall('.*var stChartValue = \[(.*)\].*', halftrading.text)[0].split(',')
+        #　构建交易量数据结构
+        trading_volume = ''
+        for stChartValue in stChartValues:
+            index = stChartValues.index(stChartValue)
+            st = sts[index]
+            score_st = stChartValue.replace("'", '') + ':' + st
+            trading_volume += score_st + ','
+
+        # 需要的结果数据入库
+
         pass
