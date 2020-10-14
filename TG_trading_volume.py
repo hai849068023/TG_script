@@ -77,4 +77,19 @@ while True:
         gamedetailsoup = BeautifulSoup(gamedetail.text, 'html.parser')
 
         # 获得半场交易量数据
-        halftrading = tg.post('https://m3.tg6666.net/chatShow.php',data={},verify=False)
+        tradingele = gamedetailsoup.select('.content-2 .chatShowIcon')[0]
+        tradingvalue = gamedetailsoup.select('.content-2 .volume')[0].text.strip()[3:]
+        tradingdata = []
+        for para in re.findall("\((.*)\)", tradingele.attrs['onclick'])[0].split(','):
+            tradingdata.append(para[1:-1])
+        tradingdata.append(tradingvalue)
+        tdata = {
+            'eventid': tradingdata[3],
+            'marketid': tradingdata[4],
+            'chartid': tradingdata[1],
+            'competitionname': tradingdata[2],
+            'gameName': tradingdata[0],
+            'totaldealmoney': tradingdata[7],
+        }
+        halftrading = tg.post('https://m3.tg6666.net/chatShow.php',data=tdata,verify=False)
+        pass
