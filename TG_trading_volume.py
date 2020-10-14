@@ -5,7 +5,6 @@ import pymysql
 import urllib3
 import datetime
 from bs4 import BeautifulSoup
-from TG_Base import TG_base
 
 urllib3.disable_warnings()
 tg = requests.session()
@@ -19,6 +18,36 @@ login_page = tg.get('https://m3.tg6666.net/login.php', verify=False)
 login = tg.post('https://m3.tg6666.net/other/login.php', data={'account': account, 'pwd': pwd},
                 verify=False)
 while True:
+    # 创建数据库链接
+    db = pymysql.connect('localhost', 'tg', '123456', 'TGanalysis')
+    cursor = db.cursor()
+
+    # 查询已结束的比赛数据并记录结果
+    cursor.execute("select * from tradingdata where resultscore is null or resultscore=''")
+    allgamesodds = cursor.fetchall()
+
+    # 获取当前时间
+    nowtimeday = (datetime.datetime.now() + datetime.timedelta(days=-1)).strftime('%Y-%m-%d')
+    # 根据结果检查当前列表并导出数据
+    overgame = tg.get('https://m3.tg6666.net/gameresult.php?day={}'.format(nowtimeday), verify=False)
+    # overgame = tg.get('https://m3.tg6666.net/gameresult.php?day=2020-07-17', verify=False)
+    gameresultlistsoup = BeautifulSoup(overgame.text, 'html.parser')
+    gameresultlist = gameresultlistsoup.select('.game_list.v1')
+    gamescorelist = gameresultlistsoup.select('.trade_detail')
+    # 获取已结束比赛列表并对比拿到比赛数据
+    for gamesodd in allgamesodds:
+        gamename1 = re.findall('(.*)v', gamesodd[1])[0].strip()
+        gamename2 = re.findall('v(.*)', gamesodd[1])[0].strip()
+        for game in gameresultlist:
+            index = gameresultlist.index(game)
+            if gamename1 in game.text and gamename2 in game.text:
+                # 半场结果
+                halfresult = gamescorelist[index].select('.trade_cell.trade_border_bottom.color_red')[1].text
+                # 结果写入
+                cursor.execute(
+                    "update tradingdata set resultscore='{}' where id={}".format(halfresult, gamesodd[0]))
+                db.commit()
+
 
     # 获取所有比赛记录并分析记录
     market = tg.get('https://m3.tg6666.net/market.php', verify=False)
