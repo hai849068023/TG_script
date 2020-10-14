@@ -19,7 +19,7 @@ login = tg.post('https://m3.tg6666.net/other/login.php', data={'account': accoun
                 verify=False)
 while True:
     # 创建数据库链接
-    db = pymysql.connect('localhost', 'tg', '123456', 'TGanalysis')
+    db = pymysql.connect('localhost', 'root', 'root', 'TGanalysis')
     cursor = db.cursor()
 
     # 查询已结束的比赛数据并记录结果
@@ -47,7 +47,6 @@ while True:
                 cursor.execute(
                     "update tradingdata set resultscore='{}' where id={}".format(halfresult, gamesodd[0]))
                 db.commit()
-
 
     # 获取所有比赛记录并分析记录
     market = tg.get('https://m3.tg6666.net/market.php', verify=False)
@@ -78,23 +77,24 @@ while True:
 
         # 获得半场交易量数据
         tradingele = gamedetailsoup.select('.content-2 .chatShowIcon')[0]
-        tradingvalue = gamedetailsoup.select('.content-2 .volume')[0].text.strip()[3:]
         tradingdata = []
-        for para in re.findall("\((.*)\)", tradingele.attrs['onclick'])[0].split(','):
-            tradingdata.append(para[1:-1])
-        tradingdata.append(tradingvalue)
+        for para in re.findall("\((.*)\)", tradingele.attrs['onclick'])[0].replace("'", '').split(','):
+            tradingdata.append(para)
+        # 如果半场比分没有则继续下一个
+        if len(tradingdata) != 7:
+            continue
         tdata = {
             'eventid': tradingdata[3],
             'marketid': tradingdata[4],
             'chartid': tradingdata[1],
             'competitionname': tradingdata[2],
             'gameName': tradingdata[0],
-            'totaldealmoney': tradingdata[7],
+            'totaldealmoney': tradingdata[5] + ',' + tradingdata[6],
         }
-        halftrading = tg.post('https://m3.tg6666.net/chatShow.php',data=tdata,verify=False)
+        halftrading = tg.post('https://m3.tg6666.net/chatShow.php', data=tdata, verify=False)
         sts = re.findall('.*var st = \[(.*)\].*', halftrading.text)[0].split(',')
         stChartValues = re.findall('.*var stChartValue = \[(.*)\].*', halftrading.text)[0].split(',')
-        #　构建交易量数据结构
+        # 　构建交易量数据结构
         trading_volume = ''
         for stChartValue in stChartValues:
             index = stChartValues.index(stChartValue)
@@ -102,6 +102,22 @@ while True:
             score_st = stChartValue.replace("'", '') + ':' + st
             trading_volume += score_st + ','
 
-        # 需要的结果数据入库
+        # 检查是否存在重复内容，不导入重复内容
+        cursor.execute("select id from tradingdata where gamename='{}'".format(parameter[3]))
+        is_exist = cursor.fetchall()
+        if len(is_exist) == 0:
+            cursor.execute(
+                "insert into tradingdata(gamename, trading_volume) value ('{}', '{}')".format(parameter[3],
+                                                                                              trading_volume))
+            db.commit()
+        else:
+            cursor.execute(
+                "update tradingdata set trading_volume='{}' where gamename='{}'".format(trading_volume, parameter[3]))
 
-        pass
+    db.close()
+
+    # 完成一次记录等待
+    print('等待10分钟后继续执行...-nowtime:{}'.format(datetime.datetime.now().strftime(
+        '%y-%m-%d %H:%M:%S')))
+    time.sleep(600)
+
