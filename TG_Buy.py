@@ -44,8 +44,7 @@ while True:
         orderrecordsoup = BeautifulSoup(orderrecord.text, 'html.parser')
 
         # 异常结束
-        if '请输入帐号' in orderrecord.text:
-            raise
+        assert '请输入帐号' in orderrecord.text
 
         # 获取余额
         balance = float(orderrecordsoup.select('.money')[0].text)
@@ -120,9 +119,7 @@ while True:
         market = tg.get('https://m3.tg6666.net/market.php', verify=False)
         marketsoup = BeautifulSoup(market.text, 'html.parser')
         marketlist = marketsoup.select('.content-2 li')
-        if len(marketlist) == 0:
-            print('无法获取列表抛出异常')
-            raise
+        assert len(marketlist) == 0
 
         # 预定义胜出球队
         winner = ''

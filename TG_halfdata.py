@@ -97,7 +97,7 @@ while True:
             for pklist in pklists:
                 if '2020' in pklist.text or '2019' in pklist.text:
                     halfbifen = pklist.select('.score')[0].text
-                    halfbifenadd = int(halfbifen[-3]) - int(halfbifen[-1])
+                    halfbifenadd = abs(int(halfbifen[-3]) - int(halfbifen[-1]))
                     if halfbifenadd >= 2:  # 判断是否半场比分总值始终大于等于2
                         pkhalf = True
                     else:
