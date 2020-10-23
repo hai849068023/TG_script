@@ -94,7 +94,7 @@ while True:
             pkrecordsoup = BeautifulSoup(pkrecord.text, 'html.parser')
             pklists = pkrecordsoup.select('.table_body_row.battle_record.type4')
             pkhalf = False  # 是否符合需求，半场比分总值大于2
-            for pklist in pklists:
+            for pklist in pklists[:2]:
                 if '2020' in pklist.text or '2019' in pklist.text:
                     halfbifen = pklist.select('.score')[0].text
                     halfbifenadd = abs(int(halfbifen[-3]) - int(halfbifen[-1]))
