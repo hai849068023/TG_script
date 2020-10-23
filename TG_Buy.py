@@ -22,75 +22,74 @@ login = tg.post('https://m3.tg6666.net/other/login.php', data={'account': accoun
                 verify=False)
 # ordertimes = 8
 while True:
-    # 通过邮件检测暂停下单并获取提现
-    p = POP3('pop.163.com')
-    p.user('18655109810@163.com')
-    p.pass_('hai214810')
-    all_message = p.list()
-    for message in all_message[1]:
-        num = message.decode()[0]
-        detaillist = p.retr(num)[1]
-        for email in detaillist:
-            if '18758277138' in email.decode():
-                print('需要提现,暂停运行一小时')
-                p.dele(num)
-                time.sleep(3600)
-                break
-        break
+    # # 通过邮件检测暂停下单并获取提现
+    # p = POP3('pop.163.com')
+    # p.user('18655109810@163.com')
+    # p.pass_('hai214810')
+    # all_message = p.list()
+    # for message in all_message[1]:
+    #     num = message.decode()[0]
+    #     detaillist = p.retr(num)[1]
+    #     for email in detaillist:
+    #         if '18758277138' in email.decode():
+    #             print('需要提现,暂停运行一小时')
+    #             p.dele(num)
+    #             time.sleep(3600)
+    #             break
+    #     break
 
     try:
         # 获取下单列表记录
         orderrecord = tg.get('https://m3.tg6666.net/orderinfo.php', verify=False)
         orderrecordsoup = BeautifulSoup(orderrecord.text, 'html.parser')
 
-        # 异常结束
-        assert '请输入帐号' in orderrecord.text
-
-        # 获取余额
-        balance = float(orderrecordsoup.select('.money')[0].text)
-
-        # 交易金额
-        if orderrecordsoup.select('.trade_amount_num')[0].text != '':
-            trading = float(orderrecordsoup.select('.trade_amount_num')[0].text)
-        else:
-            trading = 0
-        # 获取是否存在下单项
-        is_order = orderrecordsoup.select('.game_list.v1')
+        # # 异常结束
+        # assert '请输入帐号' in orderrecord.text
+        # # 获取余额
+        # balance = float(orderrecordsoup.select('.money')[0].text)
+        # 
+        # # 交易金额
+        # if orderrecordsoup.select('.trade_amount_num')[0].text != '':
+        #     trading = float(orderrecordsoup.select('.trade_amount_num')[0].text)
+        # else:
+        #     trading = 0
+        # # 获取是否存在下单项
+        # is_order = orderrecordsoup.select('.game_list.v1')
         # 获得下单列表
         order_list = []
         for order in is_order:
             guest_name = re.findall('.*vs(.*)', order.text.strip())[0].strip()
             order_list.append(guest_name)
-
-        # 如果没有余额并且没有订单记录则退出程序，如果有订单记录继续s
-        if balance + trading >= 200:
-            # 发送邮件
-            try:
-                # 邮件发送代码
-                ############################################################################
-                receivers = ['18758277138@163.com']
-                msg = MIMEText('余额满200,可发起提现. 等待一小时后继续执行！/n 发送时间:{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))  # 邮件内容
-                msg['Subject'] = '提现提醒'  # 邮件主题
-                msg['From'] = '18655109810@163.com'  # 发送者账号
-                msg['To'] = '18758277138@163.com'  # 接收者账号列表
-                smtObj = smtplib.SMTP('smtp.163.com')
-                smtObj.login('18655109810@163.com', 'hai214810')
-                smtObj.sendmail('18655109810@163.com', receivers, msg.as_string())
-                print('邮件发送成功')
-            ###########################################################################
-            except smtplib.SMTPException:
-                print('邮件发送失败')
-            time.sleep(3600)
-            continue
-        if len(is_order) > 0 and balance < 100:
-            print('待结算，等待10分钟...{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
-            time.sleep(600)
-            continue
-        # 结束执行
-        if balance < 100 and len(is_order) == 0:
-            print('gameover,等待拯救！{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
-            time.sleep(600)
-            continue
+        # 
+        # # 如果没有余额并且没有订单记录则退出程序，如果有订单记录继续s
+        # if balance + trading >= 200:
+        #     # 发送邮件
+        #     try:
+        #         # 邮件发送代码
+        #         ############################################################################
+        #         receivers = ['18758277138@163.com']
+        #         msg = MIMEText('余额满200,可发起提现. 等待一小时后继续执行！/n 发送时间:{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))  # 邮件内容
+        #         msg['Subject'] = '提现提醒'  # 邮件主题
+        #         msg['From'] = '18655109810@163.com'  # 发送者账号
+        #         msg['To'] = '18758277138@163.com'  # 接收者账号列表
+        #         smtObj = smtplib.SMTP('smtp.163.com')
+        #         smtObj.login('18655109810@163.com', 'hai214810')
+        #         smtObj.sendmail('18655109810@163.com', receivers, msg.as_string())
+        #         print('邮件发送成功')
+        #     ###########################################################################
+        #     except smtplib.SMTPException:
+        #         print('邮件发送失败')
+        #     time.sleep(3600)
+        #     continue
+        # if len(is_order) > 0 and balance < 100:
+        #     print('待结算，等待10分钟...{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+        #     time.sleep(600)
+        #     continue
+        # # 结束执行
+        # if balance < 100 and len(is_order) == 0:
+        #     print('gameover,等待拯救！{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+        #     time.sleep(600)
+        #     continue
 
         # 久赌必输
         # if ordertimes == 0:
