@@ -47,12 +47,19 @@ while True:
             for game in gameresultlist:
                 index = gameresultlist.index(game)
                 if gamename1 in game.text and gamename2 in game.text:
+                    # 全场结果
+                    halfresult = gamescorelist[index].select('.trade_cell.trade_border_bottom.color_red')[0].text
                     # 半场结果
                     halfresult = gamescorelist[index].select('.trade_cell.trade_border_bottom.color_red')[1].text
                     # 结果写入
-                    cursor.execute(
-                        "update half_testwater set result_score='{}' where id={}".format(halfresult, gamesodd[0]))
-                    db.commit()
+                    if halfresult:
+                        nowtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        cursor.execute(
+                            "update half_testwater set result_score='{}',updatetime='{}' where id={}".format(halfresult,
+                                                                                                             nowtime,
+                                                                                                             gamesodd[
+                                                                                                                 0]))
+                        db.commit()
 
         # 获取所有比赛记录并分析记录
         market = tg.get('https://m3.tg6666.net/market.php', verify=False)
@@ -108,6 +115,7 @@ while True:
                     else:
                         pass
             if home_strong > away_strong:
+                buy_score = '2-1'
                 nowtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute(
                     "insert into half_testwater(gamename, buy_score, strong_team, updatetime) values ('{}', '{}', '{}', '{}')".format(
@@ -115,12 +123,112 @@ while True:
 
                 db.commit()
             elif home_strong < away_strong:
+                buy_score = '1-2'
+                nowtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute(
-                    "insert into half_testwater(gamename, buy_score, strong_team) values ('{}', '{}', '{}')".format(
-                        parameter[3], '1-2', home_team))
+                    "insert into half_testwater(gamename, buy_score, strong_team, updatetime) values ('{}', '{}', '{}', '{}')".format(
+                        parameter[3], '1-2', away_team, nowtime))
                 db.commit()
             else:
                 pass
+            # 获取购买数据并下单操作
+            if buy_score != '':
+                allodds = gamedetailsoup.select('.content-2 .content_row')
+                for odd in allodds:
+                    if buy_score in odd.text:
+                        nextgetdata = odd.attrs['onclick']
+                        allurldata = nextgetdata.split(',')
+                        allurldatalist = []  # order接口参数列表
+                        for d in allurldata:
+                            allurlvalue = re.search("'(.*)'", d).group(1)
+                            allurldatalist.append(allurlvalue)
+                        # 定义一个参数字典
+                        orderdata = {}
+                        orderdata['c2betorder[0][selectname]'] = allurldatalist[0]
+                        orderdata['c2betorder[0][time]'] = allurldatalist[1]
+                        orderdata['c2betorder[0][gameid]'] = allurldatalist[2]
+                        orderdata['c2betorder[0][markettype]'] = allurldatalist[3]
+                        orderdata['c2betorder[0][gamename]'] = allurldatalist[4]
+                        orderdata['c2betorder[0][marketname]'] = allurldatalist[6]
+                        orderdata['c2betorder[0][Rate]'] = allurldatalist[7]
+                        orderdata['c2betorder[0][Bet]'] = allurldatalist[8]
+                        orderdata['c2betorder[0][BetType]'] = 'L'
+                        orderdata['c2betorder[0][MarketId]'] = allurldatalist[5]
+                        orderdata['c2betorder[0][SelectionId]'] = allurldatalist[12]
+                        orderdata['c2betorder[0][betfairori]'] = allurldatalist[13]
+                        orderdata['c2betorder[0][percent]'] = allurldatalist[14]
+                        orderdata['c2betorder[0][chk]'] = 'order'
+                        orderdata['c2betorder[0][category]'] = allurldatalist[15]
+                        orderdata['c2betorder[0][selectrateL1]'] = allurldatalist[9]
+                        orderdata['c2betorder[0][sel]'] = ''
+                        orderdata['c2betorder[0][gc12]'] = allurldatalist[11]
+                        orderdata['c2betorder[0][pawben]'] = allurldatalist[16]
+                        orderdata['c2betorder[0][selectmoneyL1]'] = allurldatalist[17]
+                        # 请求订单接口
+                        get_order = tg.post('https://m3.tg6666.net/order.php', data=orderdata)
+                        ordersoup = BeautifulSoup(get_order.text, 'html.parser')
+                        createdata = {}  # 定义订单请求数组
+                        createdata['c2betorder[0][handicap]'] = ordersoup.select('#handicap')[0].attrs['value']
+                        createdata['c2betorder[0][inplay]'] = ordersoup.select('#inplay')[0].attrs['value']
+                        createdata['c2betorder[0][selectname]'] = ordersoup.select('#selectname')[0].attrs['value']
+                        createdata['c2betorder[0][time]'] = ordersoup.select('#time')[0].attrs['value']
+                        createdata['c2betorder[0][gameid]'] = ordersoup.select('#gameid')[0].attrs['value']
+                        createdata['c2betorder[0][markettype]'] = ordersoup.select('#markettype')[0].attrs['value']
+                        createdata['c2betorder[0][gamename]'] = ordersoup.select('#gamename')[0].attrs['value']
+                        createdata['c2betorder[0][marketname]'] = ordersoup.select('#marketname_st')[0].attrs[
+                            'value']
+                        createdata['c2betorder[0][Rate]'] = ordersoup.select('#Rate')[0].attrs['value']
+                        createdata['c2betorder[0][Bet]'] = '{}'.format(balance)
+                        createdata['c2betorder[0][BetType]'] = ordersoup.select('#BetType')[0].attrs['value']
+                        createdata['c2betorder[0][MarketId]'] = ordersoup.select('#MarketId')[0].attrs['value']
+                        createdata['c2betorder[0][SelectionId]'] = ordersoup.select('#SelectionId')[0].attrs[
+                            'value']
+                        createdata['c2betorder[0][betfairori]'] = ordersoup.select('#betfairori')[0].attrs['value']
+                        createdata['c2betorder[0][percent]'] = ordersoup.select('#percent')[0].attrs['value']
+                        createdata['c2betorder[0][chk]'] = 'order'
+                        createdata['c2betorder[0][selectrateL1]'] = ordersoup.select('#selectrateL1')[0].attrs[
+                            'value']
+                        createdata['c2betorder[0][category]'] = ordersoup.select('#category')[0].attrs['value']
+                        createdata['c2betorder[0][sel]'] = ordersoup.select('#sel')[0].attrs['value']
+                        createdata['c2betorder[0][gc12]'] = ordersoup.select('#gc12')[0].attrs['value']
+
+                        # 　佛祖保佑
+                        #                             _ooOoo_
+                        #                            o8888888o
+                        #                            88" . "88
+                        #                            (| -_- |)
+                        #                            O\  =  /O
+                        #                         ____/`---'\____
+                        #                       .'  \\|     |//  `.
+                        #                      /  \\|||  :  |||//  \
+                        #                     /  _||||| -:- |||||-  \
+                        #                     |   | \\\  -  /// |   |
+                        #                     | \_|  ''\---/''  |   |
+                        #                     \  .-\__  `-`  ___/-. /
+                        #                   ___`. .'  /--.--\  `. . __
+                        #                ."" '<  `.___\_<|>_/___.'  >'"".
+                        #               | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+                        #               \  \ `-.   \_ __\ /__ _/   .-` /  /
+                        #          ======`-.____`-.___\_____/___.-`____.-'======
+                        #                             `=---='
+                        #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        #                       　　　拈花一指定乾坤
+                        createorder = tg.post('https://m3.tg6666.net/order_finish.php', data=createdata)
+                        if '下注成功' in createorder.text:
+                            print('购买成功! 5分钟后继续... {}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+                            time.sleep(300)
+                            # ordertimes -= 1
+                            break
+                        else:
+                            print('购买失败！问题： {}'.format(createorder.text))
+            else:
+                print('当前无可购买比赛,等待5秒..{}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+                time.sleep(5)
+        db.close()
+        # 完成一次记录等待
+        print('等待10分钟后继续执行...-nowtime:{}'.format(datetime.datetime.now().strftime(
+            '%y-%m-%d %H:%M:%S')))
+        time.sleep(600)
     except:
         print('故障等待5分钟后继续执行...-nowtime:{}'.format(datetime.datetime.now().strftime(
             '%y-%m-%d %H:%M:%S')))
