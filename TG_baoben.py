@@ -158,7 +158,7 @@ while True:
                             if '下注成功' in createorder.text:
                                 print('购买成功! 90分钟后继续... {}'.format(
                                     datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))
-                                time.sleep(4500)
+                                time.sleep(5400)
                                 # ordertimes -= 1
                                 break
                             else:
