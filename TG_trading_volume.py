@@ -42,11 +42,13 @@ while True:
             for game in gameresultlist:
                 index = gameresultlist.index(game)
                 if gamename1 in game.text and gamename2 in game.text:
+                    # 全场结果
+                    allresult = gamescorelist[index].select('.trade_cell.trade_border_bottom.color_red')[0].text
                     # 半场结果
                     halfresult = gamescorelist[index].select('.trade_cell.trade_border_bottom.color_red')[1].text
                     # 结果写入
                     cursor.execute(
-                        "update tradingdata set resultscore='{}' where id={}".format(halfresult, gamesodd[0]))
+                        "update tradingdata set resultscore='{}' where id={}".format(allresult, gamesodd[0]))
                     db.commit()
 
         # 获取所有比赛记录并分析记录
@@ -66,7 +68,28 @@ while True:
             continue
 
         # 遍历列表
-        for market in marketlist[:5]:
+        for market in marketlist:
+            # # 获取保本元素
+            # try:
+            #     baoben = market.select('.guaranteedNomo')[0].text
+            # except:
+            #     continue
+            # else:
+            #     # 获取比赛请求链接
+            #     parameter = []
+            #     for para in re.findall("\((.*)\)", market.attrs['onclick'])[0].split(','):
+            #         parameter.append(para[1:-1])
+            #     gamedetail = tg.get(
+            #         'https://m3.tg6666.net/marketorder.php?gc12={}&gameid={}&time={}&name={}&competitionname={}&status_id={}'.format(
+            #             parameter[0], parameter[1], parameter[2], parameter[3], parameter[4], parameter[5]))
+            #     gamedetailsoup = BeautifulSoup(gamedetail.text, 'html.parser')
+            #
+            #     is_baoben = gamedetailsoup.select('.guaranteed_detailNomo')[0].attrs['style']
+            #     if is_baoben:
+            #
+            #     pass
+
+
             # 获取比赛请求链接
             parameter = []
             for para in re.findall("\((.*)\)", market.attrs['onclick'])[0].split(','):
@@ -76,13 +99,13 @@ while True:
                     parameter[0], parameter[1], parameter[2], parameter[3], parameter[4], parameter[5]))
             gamedetailsoup = BeautifulSoup(gamedetail.text, 'html.parser')
 
-            # 获得半场交易量数据
-            tradingele = gamedetailsoup.select('.content-2 .chatShowIcon')[0]
+            # 获得全场场交易量数据
+            tradingele = gamedetailsoup.select('.content-1 .chatShowIcon')[0]
             tradingdata = []
             for para in re.findall("\((.*)\)", tradingele.attrs['onclick'])[0].replace("'", '').split(','):
                 tradingdata.append(para)
-            # 如果半场比分没有则继续下一个
-            if len(tradingdata) != 7:
+            # 如果全场比分没有则继续下一个
+            if len(tradingdata) != 8:
                 continue
             tdata = {
                 'eventid': tradingdata[3],
@@ -92,9 +115,9 @@ while True:
                 'gameName': tradingdata[0],
                 'totaldealmoney': tradingdata[5] + ',' + tradingdata[6],
             }
-            halftrading = tg.post('https://m3.tg6666.net/chatShow.php', data=tdata, verify=False)
-            sts = re.findall('.*var st = \[(.*)\].*', halftrading.text)[0].split(',')
-            stChartValues = re.findall('.*var stChartValue = \[(.*)\].*', halftrading.text)[0].split(',')
+            alltrading = tg.post('https://m3.tg6666.net/chatShow.php', data=tdata, verify=False)
+            sts = re.findall('.*var st = \[(.*)\].*', alltrading.text)[0].split(',')
+            stChartValues = re.findall('.*var stChartValue = \[(.*)\].*', alltrading.text)[0].split(',')
             # 　构建交易量数据结构
             trading_volume = ''
             for stChartValue in stChartValues:
@@ -103,12 +126,12 @@ while True:
                 score_st = stChartValue.replace("'", '') + ':' + st
                 trading_volume += score_st + ','
 
-            # 记录当前比赛所有半场赔率数据
-            halfscore_odds = ''
-            halfscorelist = gamedetailsoup.select('.content-2 .content_row .content_cell.table_option')
-            halfoddslist = gamedetailsoup.select('.content-2 .content_row .content_cell.cell_red.table_rate')
-            for i in range(len(halfscorelist)):
-                halfscore_odds += halfscorelist[i].text.strip() + ':' + halfoddslist[
+            # 记录当前比赛所有全场场赔率数据
+            allscore_odds = ''
+            allscorelist = gamedetailsoup.select('.content-1 .content_row .content_cell.table_option')
+            alloddslist = gamedetailsoup.select('.content-1 .content_row .content_cell.cell_red.table_rate')
+            for i in range(len(allscorelist)):
+                allscore_odds += allscorelist[i].text.strip() + ':' + alloddslist[
                     i].text + ','
 
             # 检查是否存在重复内容，不导入重复内容
@@ -116,13 +139,13 @@ while True:
             is_exist = cursor.fetchall()
             if len(is_exist) == 0:
                 cursor.execute(
-                    "insert into tradingdata(gamename, trading_volume, halfscore_odds) value ('{}', '{}', '{}')".format(
+                    "insert into tradingdata(gamename, trading_volume, allscore_odds) value ('{}', '{}', '{}')".format(
                         parameter[3],
-                        trading_volume, halfscore_odds))
+                        trading_volume, allscore_odds))
             else:
                 cursor.execute(
-                    "update tradingdata set trading_volume='{}', halfscore_odds='{}' where gamename='{}'".format(
-                        trading_volume, halfscore_odds, parameter[3]))
+                    "update tradingdata set trading_volume='{}', allscore_odds='{}' where gamename='{}'".format(
+                        trading_volume, allscore_odds, parameter[3]))
             db.commit()
         db.close()
 
