@@ -68,7 +68,7 @@ while True:
             continue
 
         # 遍历列表
-        for market in marketlist:
+        for market in marketlist[:5]:
             # # 获取保本元素
             # try:
             #     baoben = market.select('.guaranteedNomo')[0].text

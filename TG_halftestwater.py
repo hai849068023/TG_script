@@ -20,7 +20,7 @@ with open('secret.txt', 'r') as f:
     secret = f.readlines()
     account = secret[0].strip()
     pwd = secret[1]
-login_page = tg.get('https://m3.tg6666.net/login.php', verify=False)
+login_page = tg.get('https://m3.tg6666.net/lmarketlistogin.php', verify=False)
 login = tg.post('https://m3.tg6666.net/other/login.php', data={'account': account, 'pwd': pwd},
                 verify=False)
 
