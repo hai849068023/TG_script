@@ -46,7 +46,7 @@ while True:
                 # 邮件发送代码
                 ############################################################################
                 receivers = ['18758277138@163.com']
-                msg = MIMEText('余额满200,可发起提现. 等待一小时后继续执行！/n 发送时间:{}'.format(datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))  # 邮件内容
+                msg = MIMEText('当前账户余额{},可发起提现！/n 发送时间:{}'.format(balance + trading, datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))  # 邮件内容
                 msg['Subject'] = '提现提醒'  # 邮件主题
                 msg['From'] = '18655109810@163.com'  # 发送者账号
                 msg['To'] = '18758277138@163.com'  # 接收者账号列表
@@ -57,8 +57,7 @@ while True:
             ###########################################################################
             except smtplib.SMTPException:
                 print('邮件发送失败')
-            time.sleep(3600)
-            continue
+
         if len(is_order) > 0 and balance < 100:
             print('待结算，等待10分钟...{}'.format(datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))
             time.sleep(600)
@@ -142,7 +141,10 @@ while True:
         createdata['c2betorder[0][marketname]'] = ordersoup.select('#marketname_st')[0].attrs[
             'value']
         createdata['c2betorder[0][Rate]'] = ordersoup.select('#Rate')[0].attrs['value']
-        createdata['c2betorder[0][Bet]'] = '{}'.format(balance)
+        if balance >= 200:
+            createdata['c2betorder[0][Bet]'] = '{}'.format(100)
+        else:
+            createdata['c2betorder[0][Bet]'] = '{}'.format(balance)
         createdata['c2betorder[0][BetType]'] = ordersoup.select('#BetType')[0].attrs['value']
         createdata['c2betorder[0][MarketId]'] = ordersoup.select('#MarketId')[0].attrs['value']
         createdata['c2betorder[0][SelectionId]'] = ordersoup.select('#SelectionId')[0].attrs[
@@ -181,16 +183,14 @@ while True:
         if '下注成功' in createorder.text:
             print('购买成功! 10分钟后继续... {}'.format(datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))
             time.sleep(600)
-            # ordertimes -= 1
-            break
         else:
             print('购买失败！问题： {}'.format(createorder.text))
 
     except:
         # 等待五分钟后重新登录
-        print('异常5分钟后重新登录 {}'.format(datetime.now().strftime('%y-%m-%d %H:%M:%S')))
+        print('异常5分钟后重新登录 {}'.format(datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')))
         time.sleep(300)
         # 登录系统
-        login_page = tg.get('https://m3.tg6666.net/login.php', verify=False)
-        login = tg.post('https://m3.tg6666.net/other/login.php', data={'account': account, 'pwd': pwd},
+        login_page = tg.get('https://m1.tg6000.net/login.php', verify=False)
+        login = tg.post('https://m1.tg6000.net/other/login.php', data={'account': account, 'pwd': pwd},
                         verify=False)
