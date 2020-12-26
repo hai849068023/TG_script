@@ -24,7 +24,7 @@ login = tg.post('https://m1.tg6000.net/other/login.php', data={'account': accoun
 while True:
     # try:
     # 连接数据库
-    db = pymysql.connect("localhost", "root", "root", "tganalysis")
+    db = pymysql.connect("localhost", "root", "root", "TGanalysis")
     cursor = db.cursor()
 
     # 检查历史结果
