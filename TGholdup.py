@@ -51,6 +51,9 @@ while True:
                 parameter[0], parameter[1], parameter[2], parameter[3], parameter[4], parameter[5]))
         gamedetailsoup = BeautifulSoup(gamedetail.text, 'html.parser')
 
-        # 计算当前game情况给出结果
-
--
+        # 计算当前gameV情况给出结果
+        gamevs = tg.get('https://m1.tg6000.net/pkRecords.php?gametime={}&gamename={}'.format(parameter[2], parameter[3]))
+        gamevssoup = BeautifulSoup(gamevs.text, 'html.parser')
+        gamevslist = gamevssoup.select('.content-1 .table_body_row.battle_record.type1')
+        homegame =
+        pass
