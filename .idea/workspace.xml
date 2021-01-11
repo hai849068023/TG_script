@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3dec1824-5052-4f09-a138-f544444fd255" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/TG.py" beforeDir="false" afterPath="$PROJECT_DIR$/TG.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TGholdup.py" beforeDir="false" afterPath="$PROJECT_DIR$/TGholdup.py" afterDir="false" />
-    </list>
+    <list default="true" id="3dec1824-5052-4f09-a138-f544444fd255" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,8 +13,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/TGholdup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2682">
-              <caret line="219" column="103" lean-forward="true" selection-start-line="219" selection-start-column="103" selection-end-line="219" selection-end-column="103" />
+            <state relative-caret-position="391">
+              <caret line="32" lean-forward="true" selection-start-line="32" selection-end-line="32" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -96,6 +93,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -204,8 +202,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/TGholdup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2682">
-          <caret line="219" column="103" lean-forward="true" selection-start-line="219" selection-start-column="103" selection-end-line="219" selection-end-column="103" />
+        <state relative-caret-position="391">
+          <caret line="32" lean-forward="true" selection-start-line="32" selection-end-line="32" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
