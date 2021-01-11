@@ -101,7 +101,7 @@ while True:
             pkrecordsoup = BeautifulSoup(pkrecord.text, 'html.parser')
             # 获取今年的比赛记录并记录
             pklists = pkrecordsoup.select('.table_body_row.battle_record.type4')
-            if len(pklists) > 0 and ('2020' in pklists[0].text or '2019' in pklists[0].text):
+            if len(pklists) > 0 and '2020' in pklists[0].text:
                 home_team = pklists[0].select('.home_team')[0].text
                 away_team = pklists[0].select('.away_team')[0].text
                 allbifen1 = pklists[0].select('.score')[0].text[0]
